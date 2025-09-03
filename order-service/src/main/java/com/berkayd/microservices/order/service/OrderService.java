@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.berkayd.microservices.order.client.InventoryClient;
 import com.berkayd.microservices.order.dto.OrderRequest;
 import com.berkayd.microservices.order.model.Order;
 import com.berkayd.microservices.order.repository.OrderRepository;
@@ -15,14 +16,22 @@ import lombok.RequiredArgsConstructor;
 public class OrderService {
     
     private final OrderRepository orderRepository;
+    private final InventoryClient inventoryClient;
 
     public void placeOrder(OrderRequest orderRequest) {
-        Order order = new Order();
-        order.setOrderNumber(UUID.randomUUID().toString());
-        order.setPrice(orderRequest.price());
-        order.setSkuCode(orderRequest.skuCode());
-        order.setQuantity(orderRequest.quantity());
+        boolean flag = inventoryClient.isInStock(orderRequest.skuCode(), orderRequest.quantity());
 
-        orderRepository.save(order);
+        if (flag) {
+            Order order = new Order();
+            order.setOrderNumber(UUID.randomUUID().toString());
+            order.setPrice(orderRequest.price());
+            order.setSkuCode(orderRequest.skuCode());
+            order.setQuantity(orderRequest.quantity());
+
+            orderRepository.save(order);
+        }
+        else {
+            throw new RuntimeException("Product wth sku code " + orderRequest.skuCode() + " is not in stock");
+        }
     }
 }

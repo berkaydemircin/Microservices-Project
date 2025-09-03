@@ -5,13 +5,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
+
+import com.berkayd.microservices.order.stubs.InventoryClientStub;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(TestcontainersConfiguration.class) // uses the single MySQLContainer bean
+@Import(TestcontainersConfiguration.class) 
+@AutoConfigureWireMock(port = 0)
+@TestPropertySource(properties = {
+  "inventory.url=http://localhost:${wiremock.server.port}",
+  "spring.cloud.discovery.enabled=false"
+})
 class OrderServiceApplicationTests {
 
   @LocalServerPort
@@ -27,11 +36,13 @@ class OrderServiceApplicationTests {
   void shouldCreateOrder() {
     String reqBody = """
       {
-        "skuCode": "testing",
-        "price": 100,
-        "quantity": 401
+        "skuCode": "iphone_15",
+        "price": 1000,
+        "quantity": 1
       }
     """;
+
+    InventoryClientStub.stubInventoryCall("iphone_15", 1);
 
     RestAssured.given()
         .contentType(ContentType.JSON)
