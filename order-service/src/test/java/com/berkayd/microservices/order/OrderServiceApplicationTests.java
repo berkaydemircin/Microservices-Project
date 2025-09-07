@@ -36,10 +36,15 @@ class OrderServiceApplicationTests {
   void shouldCreateOrder() {
     String reqBody = """
       {
-        "skuCode": "iphone_15",
-        "price": 1000,
-        "quantity": 1
+      "skuCode": "iphone_15",
+      "price": 1000,
+      "quantity": 1,
+      "userDetails": {
+        "email": "test@example.com",
+        "firstName": "Test",
+        "lastName": "User"
       }
+    }
     """;
 
     InventoryClientStub.stubInventoryCall("iphone_15", 1);
