@@ -1,0 +1,19 @@
+server:
+  http_listen_port: 3200
+
+distributor:
+  receivers:
+    zipkin:
+
+storage:
+  trace:
+    backend: local
+    local:
+      path: /tmp/tempo/blocks
+
+compactor:
+  compaction:
+    compaction_window: 1h
+    max_block_bytes: 100000000
+    block_retention: 1h
+    compacted_block_retention: 10m
